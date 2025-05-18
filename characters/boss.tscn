@@ -1,0 +1,61 @@
+[gd_scene load_steps=10 format=3 uid="uid://c7ki5pmbxqvr5"]
+
+[ext_resource type="Script" uid="uid://dan3bq8rs67nw" path="res://characters/boss.gd" id="1_dxum7"]
+[ext_resource type="PackedScene" uid="uid://8nxtuvsi7a42" path="res://characters/boss_projectiles.tscn" id="2_8on28"]
+[ext_resource type="Texture2D" uid="uid://2p6hmajny7n4" path="res://art/Mecha-stone Golem 0.1/PNG sheet/Character_sheet.png" id="2_lwamq"]
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_8on28"]
+atlas = ExtResource("2_lwamq")
+region = Rect2(0, 0, 100, 100)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_at2eh"]
+atlas = ExtResource("2_lwamq")
+region = Rect2(100, 0, 100, 100)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_vxro7"]
+atlas = ExtResource("2_lwamq")
+region = Rect2(200, 0, 100, 100)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_1vriw"]
+atlas = ExtResource("2_lwamq")
+region = Rect2(300, 0, 100, 100)
+
+[sub_resource type="SpriteFrames" id="SpriteFrames_4wrhy"]
+animations = [{
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_8on28")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_at2eh")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_vxro7")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_1vriw")
+}],
+"loop": true,
+"name": &"idle",
+"speed": 10.0
+}]
+
+[sub_resource type="CapsuleShape2D" id="CapsuleShape2D_1kamv"]
+radius = 23.0
+height = 48.0
+
+[node name="Boss" type="CharacterBody2D"]
+collision_layer = 8
+collision_mask = 7
+script = ExtResource("1_dxum7")
+bullet_scene = ExtResource("2_8on28")
+
+[node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="."]
+sprite_frames = SubResource("SpriteFrames_4wrhy")
+animation = &"idle"
+autoplay = "idle"
+frame_progress = 0.268877
+
+[node name="Hurtbox" type="CollisionShape2D" parent="."]
+position = Vector2(0, -3)
+shape = SubResource("CapsuleShape2D_1kamv")
