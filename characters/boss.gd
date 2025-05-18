@@ -12,11 +12,13 @@ var player: Node
 var room_bounds: Rect2
 var max_hp := 50
 var current_hp := 50
-var in_bomb_phase := false
+
+var bomb_phase_started := false
 
 @onready var camera := get_node("/root/MainScene/Camera2D")
 @onready var shoot_timer := Timer.new()
 @onready var move_timer := Timer.new()
+@onready var bomb_timer := Timer.new()
 
 func _ready():
 	# Set up room bounds based on camera limits
@@ -24,20 +26,26 @@ func _ready():
 		Vector2(camera.limit_left, camera.limit_top),
 		Vector2(camera.limit_right - camera.limit_left, camera.limit_bottom - camera.limit_top)
 	)
-
-	# Locate player
-	player = get_node("/root/MainScene/Player")
-
-	# Initialize and start timers
+	
+	# Add timers as children
 	add_child(shoot_timer)
 	shoot_timer.wait_time = shoot_interval
 	shoot_timer.timeout.connect(_shoot)
 	shoot_timer.start()
-
+	
 	add_child(move_timer)
 	move_timer.wait_time = move_interval
 	move_timer.timeout.connect(_set_new_target_position)
 	move_timer.start()
+
+	add_child(bomb_timer)
+	bomb_timer.wait_time = 2.0
+	bomb_timer.one_shot = false
+	bomb_timer.timeout.connect(_drop_bomb)
+	# Start bomb timer only when bomb phase begins (not now)
+
+	# Locate player
+	player = get_node("/root/MainScene/Player")
 
 	_set_new_target_position()
 
@@ -51,10 +59,10 @@ func _physics_process(_delta: float) -> void:
 
 	move_and_slide()
 
-	# Enter bomb phase at 50% HP
-	if not in_bomb_phase and current_hp <= (0.5 * max_hp):
-		in_bomb_phase = true
-		print("Entered Bomb Phase")
+	# Start bomb phase once health drops below 50% (only once)
+	if not bomb_phase_started and current_hp <= (0.5 * max_hp):
+		bomb_phase_started = true
+		bomb_timer.start()
 
 func _set_new_target_position():
 	# Choose a random position within the room bounds
@@ -68,38 +76,29 @@ func _shoot():
 
 	var player_pos = player.global_position
 	var player_velocity = player.velocity
-	var direction: Vector2
+
+	var direction := Vector2.ZERO
 
 	if current_hp > (0.75 * max_hp):
-		# Regular shot with more spread
+		# Regular shot with spread
 		direction = (player_pos - global_position).normalized()
-		direction = direction.rotated(randf_range(-0.3, 0.3))  # Add spread
+		direction = direction.rotated(randf_range(-0.3, 0.3))
 	else:
-		# Predictive shot
+		# Predictive shooting
 		var distance = global_position.distance_to(player_pos)
 		var travel_time = distance / bullet_speed
 		var predicted_position = player_pos + player_velocity * travel_time
 		direction = (predicted_position - global_position).normalized()
 
-	# Fire a bullet
 	var bullet = bullet_scene.instantiate()
 	bullet.global_position = global_position
 	get_tree().current_scene.add_child(bullet)
 	bullet.setup(direction, bullet_speed)
 
-	# Fire a bomb if in bomb phase
-	if in_bomb_phase:
-		_drop_bomb()
-
 func _drop_bomb():
-	print("Bomb Scene:", bomb_scene)
-	print("Player:", player)
-	
 	if not bomb_scene or not player:
-		print("No bomb scene or player!")
 		return
 
-	print("Dropping Bomb")
 	var bomb = bomb_scene.instantiate()
 	bomb.global_position = global_position
 
@@ -116,4 +115,4 @@ func take_damage(amount: int) -> void:
 
 func die():
 	print("Boss Defeated")
-	queue_free()  # Or trigger victory state
+	queue_free()
