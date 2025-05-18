@@ -93,5 +93,6 @@ func take_damage(amount :int) -> void:
 		game_over()
 
 func game_over():
-	print("Player died")
-	print("GameOver")
+	var game_ui = get_node("/root/MainScene/GameOverUI")
+	game_ui.show_game_over(false)  # false = defeat
+	queue_free()

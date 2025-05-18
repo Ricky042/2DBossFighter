@@ -115,4 +115,6 @@ func take_damage(amount: int) -> void:
 
 func die():
 	print("Boss Defeated")
+	var game_ui = get_node("/root/MainScene/GameOverUI")
+	game_ui.show_game_over(true)  # true = victory
 	queue_free()
