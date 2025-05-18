@@ -1,6 +1,5 @@
 extends CharacterBody2D
 
-
 const SPEED := 200 # Speed at which the player moves (in pixels per second)
 const BULLET_SPEED := 400 # Speed of allied shots
 const DODGE_TIME := 0.1 # Duration of dash movement boost
@@ -16,11 +15,27 @@ var is_invulnerable := false
 var max_hp := 4
 var current_hp := 4
 
+@onready var boss_arrow := get_node("/root/MainScene/Camera2D/BossArrow")
+@onready var camera := get_node("/root/MainScene/Camera2D")
+@onready var boss := get_node("/root/MainScene/Boss")  # Adjust this path
+
 
 func _physics_process(_delta: float) -> void:
+	if is_instance_valid(boss_arrow):
+		boss_arrow.top_level = true  # Make it use global coordinates
+		boss_arrow.z_index = 100     # Make sure it's drawn on top
+		boss_arrow.visible = true    # Start with arrow visible
+		
+		# Set initial modulate to fully visible
+		var modulate_color = boss_arrow.modulate
+		modulate_color.a = 1.0
+		boss_arrow.modulate = modulate_color
+		
+		print("Boss arrow initialized")
+
 	handle_movement()
 	handle_actions()
-	
+	update_boss_arrow()
 	move_and_slide()
 
 func handle_movement() -> void:
@@ -96,3 +111,104 @@ func game_over():
 	var game_ui = get_node("/root/MainScene/GameOverUI")
 	game_ui.show_game_over(false)  # false = defeat
 	queue_free()
+
+func update_boss_arrow():
+	# Make sure all nodes exist
+	if not is_instance_valid(boss) or not is_instance_valid(boss_arrow) or not is_instance_valid(camera):
+		return
+	
+	# Make sure arrow uses global coordinates
+	if not boss_arrow.top_level:
+		boss_arrow.top_level = true
+	
+	# Get viewport size
+	var viewport_size = get_viewport_rect().size
+	
+	# IMPORTANT: Calculate camera's actual view rectangle in world space
+	var camera_zoom = camera.zoom
+	var actual_view_size = Vector2(viewport_size.x / camera_zoom.x, viewport_size.y / camera_zoom.y)
+	
+	# Camera's top-left corner in world space
+	var camera_top_left = camera.global_position - (actual_view_size / 2)
+	
+	# Create a Rect2 representing the camera's view in world space
+	var camera_rect = Rect2(camera_top_left, actual_view_size)
+	
+	# Debug info
+	print("Camera position: ", camera.global_position)
+	print("Camera zoom: ", camera_zoom)
+	print("Actual view size: ", actual_view_size)
+	print("Camera rect: ", camera_rect)
+	print("Boss position: ", boss.global_position)
+	
+	# Check if boss is in camera view with margin
+	var margin = 0  # Margin in world units
+	var view_rect_with_margin = Rect2(
+		camera_rect.position.x + margin,
+		camera_rect.position.y + margin,
+		camera_rect.size.x - margin * 2,
+		camera_rect.size.y - margin * 2
+	)
+	
+	var boss_in_view = view_rect_with_margin.has_point(boss.global_position)
+	print("Boss in view: ", boss_in_view)
+	
+	# If boss is in view, hide the arrow
+	if boss_in_view:
+		boss_arrow.visible = false
+		return
+	
+	# Boss is not in view, show the arrow
+	boss_arrow.visible = true
+	
+	# Calculate position of arrow in SCREEN coordinates
+	# First convert camera and boss positions to screen space
+	var screen_center = viewport_size / 2
+	
+	# Direction from camera to boss in world space
+	var to_boss_dir = (boss.global_position - camera.global_position).normalized()
+	
+	# Calculate intersection with screen edge
+	var half_width = viewport_size.x / 2
+	var half_height = viewport_size.y / 2
+	
+	# Find intersection with screen borders
+	var border_margin = 25  # Distance from screen edges
+	var arrow_pos = Vector2()
+	
+	# Calculate ray length to each edge
+	var scale_x = (half_width - border_margin) / abs(to_boss_dir.x) if abs(to_boss_dir.x) > 0.001 else INF
+	var scale_y = (half_height - border_margin) / abs(to_boss_dir.y) if abs(to_boss_dir.y) > 0.001 else INF
+	
+	# Use smaller scale to find edge intersection
+	var edge_dist = min(scale_x, scale_y)
+	
+	# Calculate arrow position in screen space
+	arrow_pos = screen_center + to_boss_dir * edge_dist
+	
+	# Convert arrow position from screen space to world space
+	var arrow_world_pos = camera.global_position + ((arrow_pos - screen_center) / camera_zoom)
+	
+	# Set arrow position in world space
+	boss_arrow.global_position = arrow_world_pos
+	
+	# Point arrow toward boss
+	boss_arrow.rotation = to_boss_dir.angle()
+	
+	# Calculate distance for scaling and opacity
+	var distance = global_position.distance_to(boss.global_position)
+	var max_distance = 2000.0
+	var min_distance = 300.0
+	var distance_factor = 1.0 - clamp((distance - min_distance) / (max_distance - min_distance), 0.0, 1.0)
+	
+	# Apply scale and opacity
+	var scale_factor = lerp(0.01, 0.1, distance_factor)
+	boss_arrow.scale = Vector2.ONE * scale_factor
+	
+	var alpha = lerp(0.4, 1.0, distance_factor)
+	boss_arrow.modulate.a = alpha
+	
+	# Debug info
+	print("Arrow world position: ", boss_arrow.global_position)
+	print("Arrow local position: ", boss_arrow.position)
+	print("Arrow direction: ", to_boss_dir)
