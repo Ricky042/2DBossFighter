@@ -12,8 +12,8 @@ var last_input_vector := Vector2.RIGHT  # Default facing direction
 var can_dodge := true
 var is_dodging := false
 var is_invulnerable := false
-var max_hp := 4
-var current_hp := 4
+var max_hp := 3
+var current_hp := 3
 
 @onready var boss_arrow := get_node("/root/MainScene/Camera2D/BossArrow")
 @onready var camera := get_node("/root/MainScene/Camera2D")

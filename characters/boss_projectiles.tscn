@@ -1,7 +1,8 @@
-[gd_scene load_steps=11 format=3 uid="uid://8nxtuvsi7a42"]
+[gd_scene load_steps=16 format=3 uid="uid://8nxtuvsi7a42"]
 
 [ext_resource type="Script" uid="uid://dy5effwd0f8" path="res://characters/boss_projectiles.gd" id="1_3mfnw"]
 [ext_resource type="Texture2D" uid="uid://syivve7ouwlv" path="res://art/Effect and Bullet 16x16/Water Effect and Bullet 16x16.png" id="1_518er"]
+[ext_resource type="Texture2D" uid="uid://b10pxx2vdxb1n" path="res://art/Effect and Bullet 16x16/Purple Effect and Bullet 16x16.png" id="3_btcdq"]
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_btcdq"]
 atlas = ExtResource("1_518er")
@@ -27,6 +28,22 @@ region = Rect2(544, 0, 16, 16)
 atlas = ExtResource("1_518er")
 region = Rect2(560, 0, 16, 16)
 
+[sub_resource type="AtlasTexture" id="AtlasTexture_r1cxl"]
+atlas = ExtResource("3_btcdq")
+region = Rect2(304, 112, 16, 16)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_uie0t"]
+atlas = ExtResource("3_btcdq")
+region = Rect2(320, 112, 16, 16)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_rfl3h"]
+atlas = ExtResource("3_btcdq")
+region = Rect2(336, 112, 16, 16)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_bjdr7"]
+atlas = ExtResource("3_btcdq")
+region = Rect2(352, 112, 16, 16)
+
 [sub_resource type="SpriteFrames" id="SpriteFrames_r1cxl"]
 animations = [{
 "frames": [{
@@ -51,6 +68,23 @@ animations = [{
 "loop": true,
 "name": &"moving",
 "speed": 10.0
+}, {
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_r1cxl")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_uie0t")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_rfl3h")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_bjdr7")
+}],
+"loop": true,
+"name": &"wave",
+"speed": 10.0
 }]
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_3mfnw"]
@@ -63,8 +97,8 @@ script = ExtResource("1_3mfnw")
 
 [node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="."]
 sprite_frames = SubResource("SpriteFrames_r1cxl")
-animation = &"moving"
-frame_progress = 0.736013
+animation = &"wave"
+autoplay = "wave"
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="."]
 shape = SubResource("CircleShape2D_3mfnw")

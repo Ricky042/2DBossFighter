@@ -56,4 +56,5 @@ frame_progress = 0.686108
 position = Vector2(0, 3)
 shape = SubResource("RectangleShape2D_h7eml")
 
+[connection signal="area_entered" from="." to="." method="_on_area_entered"]
 [connection signal="body_entered" from="." to="." method="_on_body_entered"]

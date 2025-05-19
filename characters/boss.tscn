@@ -1,8 +1,9 @@
-[gd_scene load_steps=10 format=3 uid="uid://c7ki5pmbxqvr5"]
+[gd_scene load_steps=12 format=3 uid="uid://c7ki5pmbxqvr5"]
 
 [ext_resource type="Script" uid="uid://dan3bq8rs67nw" path="res://characters/boss.gd" id="1_dxum7"]
 [ext_resource type="PackedScene" uid="uid://8nxtuvsi7a42" path="res://characters/boss_projectiles.tscn" id="2_8on28"]
 [ext_resource type="Texture2D" uid="uid://2p6hmajny7n4" path="res://art/Mecha-stone Golem 0.1/PNG sheet/Character_sheet.png" id="2_lwamq"]
+[ext_resource type="PackedScene" uid="uid://bv7umqhvl7s6p" path="res://characters/bomb.tscn" id="3_8on28"]
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_8on28"]
 atlas = ExtResource("2_lwamq")
@@ -40,15 +41,20 @@ animations = [{
 "speed": 10.0
 }]
 
-[sub_resource type="CapsuleShape2D" id="CapsuleShape2D_1kamv"]
-radius = 23.0
-height = 48.0
+[sub_resource type="CircleShape2D" id="CircleShape2D_lwamq"]
+radius = 24.0
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_8on28"]
+radius = 21.0
 
 [node name="Boss" type="CharacterBody2D"]
 collision_layer = 8
 collision_mask = 7
+motion_mode = 1
+safe_margin = 0.008
 script = ExtResource("1_dxum7")
 bullet_scene = ExtResource("2_8on28")
+bomb_scene = ExtResource("3_8on28")
 
 [node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="."]
 sprite_frames = SubResource("SpriteFrames_4wrhy")
@@ -56,6 +62,16 @@ animation = &"idle"
 autoplay = "idle"
 frame_progress = 0.268877
 
-[node name="Hurtbox" type="CollisionShape2D" parent="."]
-position = Vector2(0, -3)
-shape = SubResource("CapsuleShape2D_1kamv")
+[node name="Area2D" type="Area2D" parent="." groups=["Boss"]]
+collision_layer = 8
+collision_mask = 7
+
+[node name="CollisionDamage" type="CollisionShape2D" parent="Area2D"]
+position = Vector2(0, -2)
+shape = SubResource("CircleShape2D_lwamq")
+
+[node name="WallCollision" type="CollisionShape2D" parent="."]
+visible = false
+shape = SubResource("CircleShape2D_8on28")
+
+[connection signal="body_entered" from="Area2D" to="." method="_on_area_2d_body_entered"]

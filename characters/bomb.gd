@@ -37,15 +37,16 @@ func explode():
 	animated_sprite.animation_finished.connect(_on_animation_finished)
 
 func _on_animation_finished():
-	# Spawn bullets after animation is done
 	if bullet_scene:
 		var origin = global_position
-		for i in range(8):
+		for i in range(16):
 			var bullet = bullet_scene.instantiate()
-			var angle = i * (PI * 2 / 8)
+			var angle = i * (TAU / 16)
 			var dir = Vector2(cos(angle), sin(angle))
 			bullet.global_position = origin
-			bullet.setup(dir, 400)  # Adjust bullet speed if needed
+			
+			# Pass "moving" to play correct animation
+			bullet.setup(dir, 400, "moving")
+			
 			get_tree().current_scene.add_child(bullet)
-
 	queue_free()
