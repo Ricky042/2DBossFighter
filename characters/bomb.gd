@@ -16,12 +16,17 @@ func _ready():
 
 func _physics_process(delta):
 	if exploded:
-		# Stop moving after explosion started
 		return
-	
+
 	var collision = move_and_collide(velocity * delta)
 	if collision:
-		velocity = velocity.bounce(collision.get_normal())
+		# Check if we hit the player
+		var collider = collision.get_collider()
+		if collider.is_in_group("Player"):
+			collider.take_damage(1)
+			explode()
+		else:
+			velocity = velocity.bounce(collision.get_normal())
 
 func start_explosion_timer() -> void:
 	await get_tree().create_timer(explosion_delay).timeout

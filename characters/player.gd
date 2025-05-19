@@ -19,8 +19,13 @@ var current_hp := 3
 @onready var camera := get_node("/root/MainScene/Camera2D")
 @onready var boss := get_node("/root/MainScene/Boss")
 @onready var shoot_timer := Timer.new()
+@onready var hp_bar = $HPBar
+
 
 func _physics_process(_delta: float) -> void:
+	hp_bar.max_value = max_hp
+	hp_bar.value = current_hp
+	
 	shoot_timer.wait_time = 0.15
 	shoot_timer.one_shot = true
 	add_child(shoot_timer)
@@ -95,7 +100,7 @@ func take_damage(amount :int) -> void:
 		return
 	
 	current_hp -= amount
-	print("Player HP: ", current_hp)
+	hp_bar.value = current_hp
 	
 	if current_hp <= 0:
 		game_over()

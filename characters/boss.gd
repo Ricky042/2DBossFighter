@@ -36,8 +36,12 @@ var float_shoot_interval := 0.05        # Interval between shots in float phase
 @onready var bomb_timer := Timer.new()                       # Timer to drop bombs during mid-phase
 @onready var charge_timer := Timer.new()                     # Triggers the start of charge phases
 @onready var float_timer := Timer.new()                      # Handles duration of float phases between charges
+@onready var hp_bar = $HPBar
 
 func _ready():
+	hp_bar.max_value = max_hp
+	hp_bar.value = current_hp
+	
 	# Initialize movement bounds based on camera limits
 	room_bounds = Rect2(
 		Vector2(camera.limit_left, camera.limit_top),
@@ -217,7 +221,7 @@ func _fire_bullet_wave():
 func take_damage(amount: int) -> void:
 	# Decrease HP and check for death
 	current_hp -= amount
-	print("Boss HP: ", current_hp)
+	hp_bar.value = current_hp
 
 	if current_hp <= 0:
 		die()
