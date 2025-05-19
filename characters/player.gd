@@ -17,22 +17,14 @@ var current_hp := 4
 
 @onready var boss_arrow := get_node("/root/MainScene/Camera2D/BossArrow")
 @onready var camera := get_node("/root/MainScene/Camera2D")
-@onready var boss := get_node("/root/MainScene/Boss")  # Adjust this path
-
+@onready var boss := get_node("/root/MainScene/Boss")
+@onready var shoot_timer := Timer.new()
 
 func _physics_process(_delta: float) -> void:
-	if is_instance_valid(boss_arrow):
-		boss_arrow.top_level = true  # Make it use global coordinates
-		boss_arrow.z_index = 100     # Make sure it's drawn on top
-		boss_arrow.visible = true    # Start with arrow visible
-		
-		# Set initial modulate to fully visible
-		var modulate_color = boss_arrow.modulate
-		modulate_color.a = 1.0
-		boss_arrow.modulate = modulate_color
-		
-		print("Boss arrow initialized")
-
+	shoot_timer.wait_time = 0.15
+	shoot_timer.one_shot = true
+	add_child(shoot_timer)
+	
 	handle_movement()
 	handle_actions()
 	update_boss_arrow()
@@ -56,8 +48,9 @@ func handle_movement() -> void:
 
 
 func handle_actions() -> void:
-	if Input.is_action_just_pressed("shoot"):
+	if Input.is_action_pressed("shoot") and shoot_timer.is_stopped():
 		shoot()
+		shoot_timer.start()
 
 	if Input.is_action_just_pressed("dodge") and can_dodge:
 		dodge(last_input_vector)
@@ -133,14 +126,7 @@ func update_boss_arrow():
 	
 	# Create a Rect2 representing the camera's view in world space
 	var camera_rect = Rect2(camera_top_left, actual_view_size)
-	
-	# Debug info
-	print("Camera position: ", camera.global_position)
-	print("Camera zoom: ", camera_zoom)
-	print("Actual view size: ", actual_view_size)
-	print("Camera rect: ", camera_rect)
-	print("Boss position: ", boss.global_position)
-	
+
 	# Check if boss is in camera view with margin
 	var margin = 0  # Margin in world units
 	var view_rect_with_margin = Rect2(
@@ -151,7 +137,6 @@ func update_boss_arrow():
 	)
 	
 	var boss_in_view = view_rect_with_margin.has_point(boss.global_position)
-	print("Boss in view: ", boss_in_view)
 	
 	# If boss is in view, hide the arrow
 	if boss_in_view:
@@ -207,8 +192,3 @@ func update_boss_arrow():
 	
 	var alpha = lerp(0.4, 1.0, distance_factor)
 	boss_arrow.modulate.a = alpha
-	
-	# Debug info
-	print("Arrow world position: ", boss_arrow.global_position)
-	print("Arrow local position: ", boss_arrow.position)
-	print("Arrow direction: ", to_boss_dir)
