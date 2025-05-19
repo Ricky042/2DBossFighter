@@ -1,14 +1,14 @@
 extends CharacterBody2D
 
-const SPEED := 200 # Speed at which the player moves (in pixels per second)
-const BULLET_SPEED := 400 # Speed of allied shots
-const DODGE_TIME := 0.1 # Duration of dash movement boost
+const SPEED := 200
+const BULLET_SPEED := 400
+const DODGE_TIME := 0.1
 const INVULN_DURATION := 0.1 
-const DODGE_COOLDOWN := 1.0  # Time before dodge can be used again
+const DODGE_COOLDOWN := 1.0
 
-@export var bullet_scene: PackedScene  # Drag Bullet.tscn into this in the Inspector
+@export var bullet_scene: PackedScene
 
-var last_input_vector := Vector2.RIGHT  # Default facing direction
+var last_input_vector := Vector2.RIGHT
 var can_dodge := true
 var is_dodging := false
 var is_invulnerable := false
@@ -18,18 +18,19 @@ var current_hp := 3
 @onready var boss_arrow := get_node("/root/MainScene/Camera2D/BossArrow")
 @onready var camera := get_node("/root/MainScene/Camera2D")
 @onready var boss := get_node("/root/MainScene/Boss")
-@onready var shoot_timer := Timer.new()
 @onready var hp_bar = $HPBar
+var shoot_timer := Timer.new()  # moved initialization here
 
+func _ready():
+	# ✅ Only add child and set timer settings ONCE
+	shoot_timer.wait_time = 0.15
+	shoot_timer.one_shot = true
+	add_child(shoot_timer)
 
 func _physics_process(_delta: float) -> void:
 	hp_bar.max_value = max_hp
 	hp_bar.value = current_hp
-	
-	shoot_timer.wait_time = 0.15
-	shoot_timer.one_shot = true
-	add_child(shoot_timer)
-	
+
 	handle_movement()
 	handle_actions()
 	update_boss_arrow()
